@@ -1,5 +1,7 @@
 # **Movie Recommendation System**
 
+This is the first phase of a four-part project for the Advanced System Programming (Full Stack) course.
+
 This program provides a command-line interface (CLI) that will be used as a movie recommendation system. 
 
 The program supports the following commands:
