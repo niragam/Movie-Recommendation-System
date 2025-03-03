@@ -1,5 +1,7 @@
 # **Movie Recommendation System**
 
+This is the second phase of a four-part project for the Advanced System Programming (Full Stack) course.
+
 This program provides a command-line interface (CLI) that will be used as a movie recommendation system. 
 
 The program supports the following commands:
@@ -167,14 +169,4 @@ To run tests after building the docker image use this command inside the contain
 cd build && ./testsMovies
 ```
 ![tests-run](Instruction-pictures/testRun.png)
-
-
---------------------------------------------------------
-### **Answers to the questions in the exercise**
-
-In contrast to the first part of the exercise, in which all the commands were implemented within the execution file, in this part we understood that the right logic should be different, so we changed the code so that every command - new or old - will be implemented in its own .h/.cpp file. Therefore:
-The fact that the names of the commands have changed, required us to touch the code that should be "closed to changes and open to expansion". In this exercise, we fixed it by registering the commands, and with the method mentioned above.
-The fact that new commands were added, required us to touch the code that should be "closed to changes and open to expansion". In this exercise, with the addition of our new logic, it would be easy to implement new commands.
-The fact that the output of the commands changed, required us to touch the code that should be "closed to changes and open to expansion. In this exercise, the output is not in the file of the program run, but instead in their own files, as mentioned above.
-The fact that the input/output comes from the sockets and not from the console, required us to touch the code that should be "closed to changes and open to expansion". In this exercise, we fixed it by implementing the threads and mutex.
 
