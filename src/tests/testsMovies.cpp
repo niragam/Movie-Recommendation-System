@@ -1,10 +1,12 @@
 #include "gtest/gtest.h"
 #include "MovieManager.h"
 #include "user.h"
-#include "run.h"
+#include "App.h"
 #include <fstream>
 #include <sstream>
+#include <vector>
 #include <cstdio>
+#include <iostream>
 
 MovieManager manager;
 // clean up the file
@@ -14,7 +16,7 @@ void cleanUpFile(const std::string &filename)
 }
 
 // Define the MovieRecommenderTest class
-class MovieRecommenderTest : public ::testing::Test
+class MovieRecommenderTest : public testing::Test
 {
 protected:
     MovieManager manager; // setting up a manager
@@ -235,4 +237,77 @@ TEST_F(MovieRecommenderTest, Recommend_MaximumLimit)
     std::vector<unsigned long int> recommendations = manager.recommendMovies(101, 102);
 
     EXPECT_LE(recommendations.size(), 10); // Recommendations should be limited to 10
+}
+
+TEST_F(MovieRecommenderTest, UpdateExistingUser)
+{
+    manager.addUser(101);
+    bool result = manager.addMovies(101, {2});
+    EXPECT_TRUE(result);
+}
+
+TEST_F(MovieRecommenderTest, UpdateNonExistingUser)
+{
+    bool result = manager.addMovies(999, {1, 2});
+    EXPECT_FALSE(result);
+}
+
+TEST_F(MovieRecommenderTest, MultipleFieldsUpdate)
+{
+    manager.addUser(101);
+    bool result = manager.addMovies(101, {1, 2});
+    EXPECT_TRUE(result);
+}
+
+// DELETE Tests
+TEST_F(MovieRecommenderTest, DeleteSingleMovie)
+{
+    manager.addUser(101);
+    manager.addMovies(101, {1});
+    bool result = manager.deleteMovies(101, {1});
+    EXPECT_TRUE(result);
+}
+
+TEST_F(MovieRecommenderTest, DeleteNonExistingUser)
+{
+    bool result = manager.deleteMovies(999, {1});
+    EXPECT_FALSE(result);
+}
+
+TEST_F(MovieRecommenderTest, DeleteNonExistingMovie)
+{
+    manager.addUser(101);
+    bool result = manager.deleteMovies(101, {999});
+    EXPECT_FALSE(result);
+}
+
+TEST_F(MovieRecommenderTest, DeleteMultipleMovies)
+{
+    manager.addUser(101);
+    manager.addMovies(101, {1, 2, 3});
+    bool result = manager.deleteMovies(101, {1, 2});
+    EXPECT_TRUE(result);
+}
+
+
+// Test for invalid port
+TEST_F(MovieRecommenderTest, invalidInput)
+{
+    char *argv[] = {"./main", "invalid"};
+    App app;
+    EXPECT_EQ(app.run(2, argv), 1);
+}
+
+TEST_F(MovieRecommenderTest, NoPort)
+{
+    char *argv[] = {"./main"};
+    App app;
+    EXPECT_EQ(app.run(1, argv), 1);
+}
+
+// Run the tests
+int main(int argc, char **argv)
+{
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

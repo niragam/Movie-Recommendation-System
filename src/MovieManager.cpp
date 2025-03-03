@@ -1,18 +1,19 @@
 #include "MovieManager.h"
+
+#include <unordered_map>
 #include <fstream>
 #include <sstream>
 #include <iostream>
-#include <algorithm>
-#include <vector>
-#include <unordered_map>
 #include <map>
 #include <filesystem>
+#include <algorithm>
 
 #define MAX_RECOMMENDATIONS 10
 
 // Adds a new user to the system
 bool MovieManager::addUser(const unsigned long int &userId)
 {
+    std::unique_lock<std::shared_mutex> lock(managerMutex);
     // Search for the user by ID
     auto reqUser = std::find_if(users.begin(), users.end(),
                                 [userId](const User &user)
@@ -32,6 +33,7 @@ bool MovieManager::addUser(const unsigned long int &userId)
 // Retrieves a user by their ID
 User MovieManager::getUser(const unsigned long int &userId)
 {
+    std::shared_lock<std::shared_mutex> lock(managerMutex);
     auto reqUser = std::find_if(users.begin(), users.end(),
                                 [userId](const User &user)
                                 { return user.getUserId() == userId; });
@@ -41,13 +43,15 @@ User MovieManager::getUser(const unsigned long int &userId)
     {
         return *reqUser;
     }
-    // Otherwise, throw an error
-    throw std::runtime_error("User not found");
+    User user = User(0); // return error
+    return user;
 }
 
 // Adds movies to the specified user's list
 bool MovieManager::addMovies(const unsigned long int &userId, const std::vector<unsigned long int> &movieIds)
 {
+    std::unique_lock<std::shared_mutex> lock(managerMutex);
+
     // Search for the user by ID
     auto reqUser = std::find_if(users.begin(), users.end(),
                                 [userId](const User &user)
@@ -70,9 +74,42 @@ bool MovieManager::addMovies(const unsigned long int &userId, const std::vector<
     return true;
 }
 
+// Delete movies to the specified user's list
+bool MovieManager::deleteMovies(const unsigned long int &userId, const std::vector<unsigned long int> &movieIds)
+{
+    std::unique_lock<std::shared_mutex> lock(managerMutex);
+
+    // Search for the user by ID
+    auto reqUser = std::find_if(users.begin(), users.end(),
+                                [userId](const User &user)
+                                { return user.getUserId() == userId; });
+
+    // If the user is not found, return false
+    if (reqUser == users.end())
+    {
+        return false;
+    }
+
+    // delete each movie to the user's list if not already present
+    for (const auto &movieId : movieIds)
+    {
+        if (reqUser->hasWatched(movieId))
+        {
+            reqUser->deleteMovie(movieId);
+        }
+        else
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
 // Saves user data to a file
 void MovieManager::saveData(const std::string &filename) const
 {
+    std::unique_lock<std::shared_mutex> lock(managerMutex);
+
     std::ofstream file(filename);
     if (!file)
     {
@@ -132,6 +169,7 @@ void MovieManager::loadData(const std::string &filename)
 // Helper function to count the number of common movies between two users
 int MovieManager::countCommonMovies(User user1, User user2)
 {
+    std::shared_lock<std::shared_mutex> lock(managerMutex);
     int commonMovies = 0;
     for (unsigned long int movieOfUser1 : user1.getMovies())
     {
@@ -149,8 +187,16 @@ int MovieManager::countCommonMovies(User user1, User user2)
 // Recommends movies to a user based on a reference movie ID
 std::vector<unsigned long int> MovieManager::recommendMovies(unsigned long int userid, unsigned long int movieId)
 {
+    std::shared_lock<std::shared_mutex> lock(managerMutex);
     // Check if the user exists
+    std::vector<unsigned long int> recommendations = {};
     User user = getUser(userid);
+    if (user.getUserId() == 0)
+    {
+        recommendations.resize(1);
+        recommendations[0] = 0;
+        return recommendations;
+    }
 
     // Calculate similarity with other users
     std::map<User, int> userSimilarity;
@@ -175,7 +221,6 @@ std::vector<unsigned long int> MovieManager::recommendMovies(unsigned long int u
     }
 
     // If no similar users are found, return an empty list
-    std::vector<unsigned long int> recommendations = {};
     if (similarUsers.empty())
     {
         return recommendations;
@@ -215,4 +260,18 @@ std::vector<unsigned long int> MovieManager::recommendMovies(unsigned long int u
             break;
     }
     return recommendations;
+}
+
+bool MovieManager::checkIfStringIsOnlyDigits(std::string string)
+{
+    if (!std::all_of(string.begin(), string.end(), ::isdigit))
+    {
+        return false;
+    }
+    int signedInt = std::stoi(string);
+    if (signedInt <= 0)
+    {
+        return false;
+    }
+    return true;
 }

@@ -1,7 +1,8 @@
-#include "run.h"
+#include <App.h>
 
-int main()
+int main(int argc, char **argv)
 {
-    run(std::cin, std::cout);
-    return 0;
+    App app;
+    return app.run(argc, argv);
 }
+
