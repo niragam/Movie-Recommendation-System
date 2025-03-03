@@ -16,6 +16,7 @@ public:
     const std::set<unsigned long int> &getMovies() const; // getter for the set of the movies the user has watched
     bool hasWatched(const unsigned long int &movieId) const; // checks if the user has watched this movie
     bool addMovie(const unsigned long int &movieId); //adding the movie to the userws movies list
+    bool deleteMovie(const unsigned long int& movieId); //deleting the movie to the userws movies list
 
     // Declare friend function
     friend bool operator<(const User &lhs, const User &rhs);

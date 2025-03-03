@@ -18,4 +18,9 @@ bool User::addMovie(const unsigned long int& movieId) { // adding the movie to t
     return moviesWatched.insert(movieId).second; 
 }
 
+bool User::deleteMovie(const unsigned long int& movieId) { // deleting the movie to this user's watched movies set.
+    return moviesWatched.erase(movieId) > 0; 
+}
+
+
 

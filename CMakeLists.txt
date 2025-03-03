@@ -19,16 +19,30 @@ FetchContent_MakeAvailable(googletest)
 include_directories(src)
 
 # Add library
-add_library(movie_lib src/MovieManager.cpp src/user.cpp src/run.cpp)
+add_library(movie_lib 
+    src/MovieManager.cpp 
+    src/user.cpp 
+    src/App.cpp 
+    src/POSTCommand.cpp 
+    src/PATCHCommand.cpp 
+    src/GETCommand.cpp 
+    src/DELETECommand.cpp 
+    src/helpCommand.cpp
+)
+
+# Add the necessary pthread library for multi-threading
+target_link_libraries(movie_lib pthread)
 
 # Add main executable
 add_executable(movieApp src/main.cpp)
-target_link_libraries(movieApp movie_lib)
+target_link_libraries(movieApp movie_lib pthread)  # Add pthread here as well
 
 # Add test executable
 add_executable(testsMovies src/tests/testsMovies.cpp)
-target_link_libraries(testsMovies gtest_main movie_lib)
+target_link_libraries(testsMovies gtest_main movie_lib pthread)  # Add pthread here as well
 add_test(NAME testsMovies COMMAND testsMovies)
 
 # Install targets for easier container execution
 install(TARGETS movieApp testsMovies RUNTIME DESTINATION /usr/src/project/build)
+
+# install(TARGETS movie_lib LIBRARY DESTINATION /usr/src/project/build)

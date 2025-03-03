@@ -1,17 +1,23 @@
-FROM gcc:latest
+FROM ubuntu:20.04
 
-RUN apt-get update && apt-get install -y cmake build-essential && apt-get clean && rm -rf /var/lib/apt/lists/*
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && \
+    apt-get install -y \
+        cmake \
+        g++ \
+        git \
+        wget \
+        libpthread-stubs0-dev \
+        python3 \
+        && apt-get clean
 
 WORKDIR /usr/src/project
 
 COPY . .
-COPY data/ /usr/src/project/data/
 
-RUN mkdir -p build
-WORKDIR /usr/src/project/build
-RUN cmake ..
-RUN make
-RUN chmod +x movieApp testsMovies
+RUN mkdir -p build && cd build && \
+    cmake .. && \
+    make
 
-ENTRYPOINT ["sh", "-c"]
-CMD ["./movieApp"]
+CMD ["/bin/bash"]
