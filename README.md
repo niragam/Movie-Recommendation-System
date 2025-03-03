@@ -162,7 +162,7 @@ docker start -i movie_app_run
 
 --------------------------------------------------------
 
-### **Run Tests**
+### **Running the Tests**
 To run tests after building the docker image use this command inside the container terminal:
 
 ```bash
