@@ -1,172 +1,151 @@
 # **Movie Recommendation System**
 
-This is the second phase of a four-part project for the Advanced System Programming (Full Stack) course.
+## Overview
 
-This program provides a command-line interface (CLI) that will be used as a movie recommendation system. 
+This project implements the server-side functionality for a movie recommendation application. It provides a RESTful API for user management, movie management, category management, and integrates with a recommendation system.
 
-The program supports the following commands:
+## Prerequisites
 
-### **Post command**
+- Docker
+- Docker Compose
+
+## Installation
+
+**Running the application**
+- Go to the project folder in the terminal.
+- Build and start the containers:
+
 ```bash
-POST [userid] [movieid1] [movieid2] ...
+docker-compose up --build
+```
+
+- In a new terminal, run:
+
+```bash
+docker exec -it web-ser /bin/bash
+```
+
+Here you can run the curl commands
+
+## Curl commands examples
+
+Below are examples of how to interact with the API using `curl` commands. Replace the placeholder values (e.g. `<userID>`, `<movieID>`, `<categoryID>`, `<username>`, `<password>`, `<name>`, `<movie title>`, `<category name>`, `<query>`) with your actual data.
+
+### Add User
+
+```bash
+curl -i -X POST http://localhost:3000/api/users \
+    -H "Content-Type: application/json" \
+    -d '{"username": "<username>", "password": "<password>", "name": "<name>"}'
+```
+
+### Get User Details
+```bash
+curl -i http://localhost:3000/api/users/<userID> \
+    -H "userId: <userID>"
 ```
 
 
-**Description:** If the user does not exist, the command associates a list of movies (movie IDs) with the new user (user ID), indicating that the user has watched these movies.
-
-**Example:**
-running a valid POST command
-
-![POST](Instruction-pictures/POST.png)
-
-
---------------------------------------------------------
-
-### **PATCH command**
+### Login User
 ```bash
-PATCH [userid] [movieid1] [movieid2] ...
+curl -i -X POST http://localhost:3000/api/users/tokens \
+    -H "Content-Type: application/json" \
+    -d '{"username": "<username>", "password": "<password>"}'
 ```
 
-**Description:** If the user exists, the command associates a list of movies (movie IDs) with a user (user ID), indicating that the user has watched these movies.
 
-**Example:**
-running a valid PATCH command
-
-![PATCH](Instruction-pictures/PATCH.png)
-
-
---------------------------------------------------------
-
-### **DELETE command**
+### Create Category
 ```bash
-DELETE [userid] [movieid1] [movieid2] ...
-```
-**Description:** The command allows you to delete watch history from a user
-
-**Example:**
-
-running a valid DELETE command
-
-![DELETE](Instruction-pictures/DELETE.png)
-
---------------------------------------------------------
-
-### **GET command**
-```bash
-GET [userid] [movieid]
-```
-**Description:** The GET command allows you to input a user ID and a single movie ID. The system will provide up to 10 additional movie recommendations based on the viewing preferences of other users with similar tastes.
-
-**Example:**
-
-running a valid GET command will print something like:
-
-![GET](Instruction-pictures/GET.png)
-
-
-depending on the movie ID and the appropriate recommendations
-
---------------------------------------------------------
-
-
-### **3. Display Help**
-```bash
-help
-```
-**Description:** The command will print a list of all available commands on the screen.
-
-**Example:**
-
-running the help command will print this:
-
-![help](Instruction-pictures/help.png)
-
-
-----------------------------------------------------------------------------------------------------------------
-
-
-## **Instructions to Run the Program Using Docker**
-
-First we need to build the docker image and start a container, this will run the program in a docker container
-
-### **1. Build docker image**
-
-```bash
-docker build -t movie_app .
-```
-This command creates a Docker image named `movie_app` using the Dockerfile in the current directory.
-
-
-
-### **2. Run a container from the docker image**
-```bash
-docker run -it --name movie_app_run movie_app
-```
-This command starts a container named `movie_app_run` from the `movie_app` image.
-
-### **3. If you are working on windows, use this command to convert ./runServer.sh from linux to windows**
-```bash
-sed -i 's/\r//' runServer.sh 
-```
-Convert ./runServer.sh from linux to windows
-
-### **4. Run the server inside the container with port number**
-```bash
-./runServer.sh <portNumber>
-```
-Replace portNumber with your selected port number.
-
-### **5. Run the client inside the container with port number and ip address**
-To run a client, after the docker container is already running, open a new terminal and run
-```bash
-docker exec -it movie_app_run /bin/bash
+curl -i -X POST http://localhost:3000/api/categories \
+    -H "Content-Type: application/json" \
+    -H "userId: <userID>" \
+    -d '{"name": "<category name>"}'
 ```
 
-Then run the client
+
+### Return All Categories
 ```bash
-./runClient.sh <ipAddress> <portNumber>
-```
-Replace ipAddress and portNumber with your selected ip address and the port number you selected for the server
-
-**If you are working on windows, use this command before running the client, to convert ./runClient.sh from linux to windows**
-```bash
-sed -i 's/\r//' runClient.sh 
-```
-Convert ./runClient.sh from linux to windows
-
-
-You can now run the commands on the client side
-
---------------------------------------------------------
-
-### **Stop the container**
-From a terminal that is not running inside the docker container
-```bash
-docker stop movie_app_run
+curl -i http://localhost:3000/api/categories
 ```
 
-From a terminal that is running inside the docker container press CTRL+D
 
---------------------------------------------------------
-
-If the container was stopped 
-### **Resume the container**
+### Return a Category with a Certain ID
 ```bash
-docker start -i movie_app_run
+curl -i http://localhost:3000/api/categories/<categoryID>
 ```
---------------------------------------------------------
 
-### **Example of a complete run**
 
-![complete-run](Instruction-pictures/run.png)
-
---------------------------------------------------------
-
-### **Running the Tests**
-To run tests after building the docker image use this command inside the container terminal:
-
+### Patch Category
 ```bash
-cd build && ./testsMovies
+curl -i -X PATCH http://localhost:3000/api/categories/<categoryID>  \
+    -H "Content-Type: application/json" \
+    -H "userId: <userID>" \
+    -d '{"name": "<new category name>"}'
 ```
-![tests-run](Instruction-pictures/testRun.png)
 
+
+### Delete Category
+```bash
+curl -i -X DELETE http://localhost:3000/api/categories/<categoryID>  \
+    -H "userId: <userID>"
+```
+
+### Add New Movie
+```bash
+curl -i -X POST http://localhost:3000/api/movies \
+    -H "Content-Type: application/json" \
+    -H "userId: <userID>" \
+    -d '{"title": "<movie title>", "categories": ["<category name>","<category name>"]}'
+```
+
+### Get Category
+```bash
+curl -i http://localhost:3000/api/movies/<movieID>
+```
+
+### Get Movies by Category
+```bash
+curl -i http://localhost:3000/api/movies  \
+    -H "userId: <userID>"
+```
+
+### Replace Movie with PUT
+```bash
+curl -i -X PUT http://localhost:3000/api/movies/<movieID>  \
+    -H "Content-Type: application/json" \
+    -H "userId: <userID>" \
+    -d '{"title": "<Updated movie>", "categories": ["<category name>","<category name>"]}'
+```
+
+
+### Delete Movie
+```bash
+curl -i -X DELETE http://localhost:3000/api/movies/<movieID>  \
+    -H "userId: <userID>"
+```
+
+### Add Movie to Watch History
+```bash
+curl -i -X POST http://localhost:3000/api/movies/<movieID>/recommend  \
+    -H "userId: <userID>"
+```
+
+### Get Recommendations
+```bash
+curl -i http://localhost:3000/api/movies/<movieID>/recommend  \
+    -H "userId: <userID>"
+```
+
+### Search Movies
+```bash
+curl -i http://localhost:3000/api/movies/search/<query>
+```
+
+## Run example
+![1](Pictures/1.png)
+![2](Pictures/2.png)
+![3](Pictures/3.png)
+![4](Pictures/4.png)
+![5](Pictures/5.png)
+![6](Pictures/6.png)
+![7](Pictures/7.png)
